@@ -41,7 +41,7 @@ namespace modules {
 
    private:
     static constexpr const char* TAG_LABEL{"<label>"};
-    bool active_window_on_monitor(active_window window, monitor_t monitor) const;
+    bool active_window_on_monitor(xcb_window_t window, monitor_t monitor) const;
 
     connection& m_connection;
     unique_ptr<active_window> m_active;

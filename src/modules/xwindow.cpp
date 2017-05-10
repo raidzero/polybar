@@ -62,8 +62,8 @@ namespace modules {
     return m_window;
   }
 
-  bool xwindow_module::active_window_on_monitor(unique_ptr<active_window> window, monitor_t monitor) const {
-    xcb_get_geometry_cookie_t cookie = xcb_get_geometry(m_connection, window->get_window());
+  bool xwindow_module::active_window_on_monitor(xcb_window_t window, monitor_t monitor) const {
+    xcb_get_geometry_cookie_t cookie = xcb_get_geometry(m_connection, window);
     xcb_get_geometry_reply_t *reply = xcb_get_geometry_reply(m_connection, cookie, nullptr);
 
     if (reply) {
@@ -144,7 +144,7 @@ namespace modules {
       m_label->reset_tokens();
 
       for (auto&& monitor : m_monitors) {
-        if (active_window_on_monitor(monitor, m_active)){
+        if (active_window_on_monitor(m_active->get_window(), monitor)) {
           printf("YES!\n");
         }
       }
