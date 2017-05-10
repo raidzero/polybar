@@ -46,8 +46,6 @@ namespace modules {
     connection& m_connection;
     unique_ptr<active_window> m_active;
     label_t m_label;
-
-    vector<monitor_t> m_monitors;
   };
 }
 
