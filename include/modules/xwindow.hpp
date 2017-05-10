@@ -46,6 +46,8 @@ namespace modules {
     connection& m_connection;
     unique_ptr<active_window> m_active;
     label_t m_label;
+
+    bool m_pinoutput{false};
   };
 }
 

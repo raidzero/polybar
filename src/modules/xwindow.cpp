@@ -89,6 +89,10 @@ namespace modules {
    */
   xwindow_module::xwindow_module(const bar_settings& bar, string name_)
       : static_module<xwindow_module>(bar, move(name_)), m_connection(connection::make()) {
+
+    // read config values
+    m_pinoutput = m_conf.get(name(), "pin-output", m_pinoutput);
+
     // Initialize ewmh atoms
     if ((ewmh_util::initialize()) == nullptr) {
       throw module_error("Failed to initialize ewmh atoms");
@@ -136,8 +140,6 @@ namespace modules {
 
     xcb_window_t win;
 
-    bool only_show_on_active_monitor = true;
-
     if (force) {
       m_active.reset();
     }
@@ -149,7 +151,7 @@ namespace modules {
     if (m_label) {
       m_label->reset_tokens();
 
-      if (only_show_on_active_monitor) {
+      if (m_pinoutput) {
         if (active_window_on_monitor(m_active->get_window(), m_bar.monitor)) {
           m_label->replace_token("%title%", m_active ? m_active->title() : "");
           return;
