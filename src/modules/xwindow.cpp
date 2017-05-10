@@ -58,6 +58,25 @@ namespace modules {
     }
   }
 
+  xcb_window_t active_window::get_window() const {
+    return m_window;
+  }
+
+  bool xwindow_module::active_window_on_monitor(unique_ptr<active_window> window, monitor_t monitor) const {
+    xcb_get_geometry_cookie_t cookie = xcb_get_geometry(m_connection, window->get_window());
+    xcb_get_geometry_reply_t *reply = xcb_get_geometry_reply(m_connection, cookie, nullptr);
+
+    if (reply) {
+      xcb_translate_coordinates_reply_t  *t = xcb_translate_coordinates_reply(m_connection,
+        xcb_translate_coordinates(m_connection, window, m_connection.root(), reply->x, reply->y), nullptr);
+
+      printf("win.x: %d, win.y: %d (%dx%d)\n", t->dst_x, t->dst_y, reply->width, reply->height);
+      printf("monitor x: %d, y: %d\n", monitor->x, monitor->y);
+    }
+
+    return true;
+  }
+
   /**
    * Construct module
    */
@@ -72,6 +91,9 @@ namespace modules {
     if (!ewmh_util::supports(_NET_ACTIVE_WINDOW)) {
       throw module_error("The WM does not list _NET_ACTIVE_WINDOW as a supported hint");
     }
+
+    // get list of monitors
+    m_monitors = randr_util::get_monitors(m_connection, m_connection.root(), false);
 
     // Add formats and elements
     m_formatter->add(DEFAULT_FORMAT, TAG_LABEL, {TAG_LABEL});
@@ -120,6 +142,13 @@ namespace modules {
 
     if (m_label) {
       m_label->reset_tokens();
+
+      for (auto&& monitor : m_monitors) {
+        if (active_window_on_monitor(monitor, m_active)){
+          printf("YES!\n");
+        }
+      }
+
       m_label->replace_token("%title%", m_active ? m_active->title() : "");
     }
   }
